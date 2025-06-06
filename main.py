@@ -5,8 +5,8 @@ app = FastAPI()
 
 
 hotels = [
-    {"id": 1, "title": "Moscow"},
-    {"id": 2, "title": "Sochi"}
+    {"id": 1, "title": "Moscow", "name": "moscow"},
+    {"id": 2, "title": "Sochi", "name": "sochi"},
 ]
 
 
@@ -33,7 +33,35 @@ def create_hotel(title: str = Body(embed=True)):
     return {"status": "OK"}
 
 
-@app.delete("/hotel/{hotel_id}")
+@app.put("/hotels/{hotel_id}")
+def change_hotel(hotel_id: int,
+                 title: str = Body(),
+                 name: str = Body()):
+    global hotels
+    for hotel in hotels:
+        if hotel["id"] == hotel_id:
+            hotel["title"] = title
+            hotel["name"] = name
+            break
+    return {"status": "OK"}
+
+
+@app.patch("/hotels/{hotel_id}")
+def changes_hotel(hotel_id: int,
+                  title: str | None = Body(None),
+                  name: str | None = Body(None)):
+    global hotels
+    for hotel in hotels:
+        if hotel["id"] == hotel_id:
+            if title:
+                hotel["title"] = title
+            if name:
+                hotel["name"] = name
+            break
+    return {"status": "OK"}
+
+
+@app.delete("/hotels/{hotel_id}")
 def delete_hotel(hotel_id: int):
     global hotels
     hotels = [hotel for hotel in hotels if hotel["id"] != hotel_id]
