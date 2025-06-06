@@ -23,5 +23,12 @@ def get_hotels(id: int | None = Query(None, description="Айди"),
     return hotels_
 
 
+@app.delete("/hotel/{hotel_id}")
+def delete_hotel(hotel_id: int):
+    global hotels
+    hotels = [hotel for hotel in hotels if hotel["id"] != hotel_id]
+    return {"status": "OK"}
+
+
 if __name__ == "__main__":
     uvicorn.run("main:app", reload=True)
