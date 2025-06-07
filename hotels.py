@@ -1,4 +1,5 @@
 from fastapi import FastAPI, Query, Body, APIRouter
+from pydantic import BaseModel
 
 
 router = APIRouter(prefix="/routers", tags=["Отели"])
@@ -23,25 +24,29 @@ def get_hotels(id: int | None = Query(None, description="Айди"),
     return hotels_
 
 
+class Hotel(BaseModel):
+    title: str
+    name: str
+
+
 @router.post("")
-def create_hotel(title: str = Body(embed=True)):
+def create_hotel(hotel_data: Hotel):
     global hotels
     hotels.append({
         "id": hotels[-1]["id"] + 1,
-        "title": title,
+        "title": hotel_data.title,
+        "name": hotel_data.name,
     })
     return {"status": "OK"}
 
 
 @router.put("/{hotel_id}")
-def change_hotel(hotel_id: int,
-                 title: str = Body(),
-                 name: str = Body()):
+def change_hotel(hotel_id: int, hotel_data: Hotel):
     global hotels
     for hotel in hotels:
         if hotel["id"] == hotel_id:
-            hotel["title"] = title
-            hotel["name"] = name
+            hotel["title"] = hotel_data.title
+            hotel["name"] = hotel_data.name
             break
     return {"status": "OK"}
 
