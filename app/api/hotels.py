@@ -1,4 +1,5 @@
 from fastapi import Query, APIRouter, Body
+from fastapi.openapi.models import Example
 
 from app.schemas.hotels import Hotel, HotelPATCH
 from app.api.dependencies import PaginationDep
@@ -35,21 +36,15 @@ def get_hotels(pagination: PaginationDep,
 
 @router.post("")
 def create_hotel(hotel_data: Hotel = Body(openapi_examples={
-    "1": {
-        "summary": "Сочи",
-        "value": {
-            "title": "Отель Сочи 5 звезд у моря",
-            "name": "sochi_u_morya",
-        }
-    },
-    "2": {
-        "summary": "Дубай",
-        "value": {
-            "title": "Отель Дубай У фонтана",
-            "name": "dubai_fountain",
-        }
-    }
-    })):
+    "1": Example(
+        summary="Сочи",
+        value={"title": "Отель Сочи 5 звезд у моря", "name": "sochi_u_morya"}
+    ),
+    "2": Example(
+        summary="Дубай",
+        value={"title": "Отель Дубай У фонтана", "name": "dubai_fountain"}
+    ),
+})):
     global hotels
     hotels.append({
         "id": hotels[-1]["id"] + 1,
