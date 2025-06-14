@@ -2,7 +2,7 @@ from fastapi import Query, APIRouter, Body
 from fastapi.openapi.models import Example
 from sqlalchemy import insert
 
-from app.database import async_session_maker
+from app.database import async_session_maker, engine
 from app.models.hotels import HotelsORM
 from app.schemas.hotels import Hotel, HotelPATCH
 from app.api.dependencies import PaginationDep
@@ -50,6 +50,7 @@ async def create_hotel(hotel_data: Hotel = Body(openapi_examples={
 })):
     async with async_session_maker() as session:
         add_hotel_stmt = insert(HotelsORM).values(**hotel_data.model_dump())
+        print(add_hotel_stmt.compile(engine, compile_kwargs={"literal_binds": True}))
         await session.execute(add_hotel_stmt)
         await session.commit()
 
