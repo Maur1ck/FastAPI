@@ -12,15 +12,15 @@ router = APIRouter(prefix="/routers", tags=["Отели"])
 
 @router.get("")
 async def get_hotels(pagination: PaginationDep,
-                     id: int | None = Query(None, description="Айди"),
-                     title: str | None = Query(None, description="Название отеля")):
+                     title: str | None = Query(None, description="Название отеля"),
+                     location: str | None = Query(None, description="Место")):
     per_page = pagination.per_page or 5
     async with async_session_maker() as session:
         query = select(HotelsORM)
-        if id:
-            query = query.filter_by(id=id)
         if title:
-            query = query.filter_by(title=title)
+            query = query.where(HotelsORM.title.like(f"%{title}%"))
+        if location:
+            query = query.where(HotelsORM.location.like(f"%{location}%"))
         query = (
             query
             .limit(per_page)
@@ -44,7 +44,6 @@ async def create_hotel(hotel_data: Hotel = Body(openapi_examples={
 })):
     async with async_session_maker() as session:
         add_hotel_stmt = insert(HotelsORM).values(**hotel_data.model_dump())
-        print(add_hotel_stmt.compile(engine, compile_kwargs={"literal_binds": True}))
         await session.execute(add_hotel_stmt)
         await session.commit()
 
