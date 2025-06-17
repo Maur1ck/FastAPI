@@ -17,20 +17,12 @@ async def get_hotels(pagination: PaginationDep,
                      location: str | None = Query(None, description="Место")):
     per_page = pagination.per_page or 5
     async with async_session_maker() as session:
-        return await HotelsRepository(session).get_all()
-        # query = select(HotelsORM)
-        # if title:
-        #     query = query.where(func.lower(HotelsORM.title).contains(title.strip().lower()))
-        # if location:
-        #     query = query.where(func.lower(HotelsORM.location).contains(location.strip().lower()))
-        # query = (
-        #     query
-        #     .limit(per_page)
-        #     .offset((pagination.page - 1) * per_page)
-        # )
-        # result = await session.execute(query)
-        # hotels = result.scalars().all()
-        # return hotels
+        return await HotelsRepository(session).get_all(
+            location=location,
+            title=title,
+            limit=per_page,
+            offset=per_page * (pagination.page - 1),
+        )
 
 
 @router.post("")
