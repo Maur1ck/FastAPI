@@ -3,10 +3,10 @@ from fastapi.openapi.models import Example
 
 from app.database import async_session_maker
 from app.repositories.hotels import HotelsRepository
-from app.schemas.hotels import Hotel, HotelPATCH
+from app.schemas.hotels import HotelAdd, HotelPATCH
 from app.api.dependencies import PaginationDep
 
-router = APIRouter(prefix="/routers", tags=["Отели"])
+router = APIRouter(prefix="/hotels", tags=["Отели"])
 
 
 @router.get("")
@@ -30,7 +30,7 @@ async def get_hotel(hotel_id: int):
 
 
 @router.post("")
-async def create_hotel(hotel_data: Hotel = Body(openapi_examples={
+async def create_hotel(hotel_data: HotelAdd = Body(openapi_examples={
     "1": Example(
         summary="Сочи",
         value={"title": "Отель Сочи 5 звезд у моря", "location": "ул. Моря, 1"}
@@ -48,7 +48,7 @@ async def create_hotel(hotel_data: Hotel = Body(openapi_examples={
 
 
 @router.put("/{hotel_id}")
-async def change_hotel(hotel_id: int, hotel_data: Hotel):
+async def change_hotel(hotel_id: int, hotel_data: HotelAdd):
     async with async_session_maker() as session:
         await HotelsRepository(session).edit(hotel_data, id=hotel_id)
         await session.commit()
