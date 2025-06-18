@@ -1,9 +1,7 @@
 from fastapi import Query, APIRouter, Body
 from fastapi.openapi.models import Example
-from sqlalchemy import insert, select, func
 
 from app.database import async_session_maker
-from app.models.hotels import HotelsORM
 from app.repositories.hotels import HotelsRepository
 from app.schemas.hotels import Hotel, HotelPATCH
 from app.api.dependencies import PaginationDep
@@ -52,15 +50,9 @@ async def change_hotel(hotel_id: int, hotel_data: Hotel):
 
 
 @router.patch("/{hotel_id}")
-def changes_hotel(hotel_id: int, hotel_data: HotelPATCH):
-    global hotels
-    for hotel in hotels:
-        if hotel["id"] == hotel_id:
-            if hotel_data.title:
-                hotel["title"] = hotel_data.title
-            if hotel_data.name:
-                hotel["name"] = hotel_data.name
-            break
+async def changes_hotel(hotel_id: int, hotel_data: HotelPATCH):
+    async with async_session_maker() as session:
+        await HotelsRepository(session).edit(hotel_data, exclude_unset=True, id=hotel_id)
     return {"status": "OK"}
 
 
