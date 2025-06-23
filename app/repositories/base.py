@@ -1,7 +1,7 @@
+from sqlalchemy.exc import IntegrityError
+
 from sqlalchemy import select, insert, delete, update
 from pydantic import BaseModel
-
-from app.schemas.hotels import Hotel
 
 
 class BaseRepository:
@@ -26,7 +26,10 @@ class BaseRepository:
 
     async def add(self, data: BaseModel):
         add_data_stmt = insert(self.model).values(**data.model_dump()).returning(self.model)
-        result = await self.session.execute(add_data_stmt)
+        try:
+            result = await self.session.execute(add_data_stmt)
+        except IntegrityError:
+            return {"status": "ERROR"}
         model = result.scalar_one()
         return self.schema.model_validate(model, from_attributes=True)
 
