@@ -1,4 +1,4 @@
-from fastapi import APIRouter, HTTPException, Response, Request
+from fastapi import APIRouter, HTTPException, Response
 
 from app.api.dependencies import UserIdDep
 from app.database import async_session_maker
@@ -36,6 +36,12 @@ async def register_user(
         access_token = AuthService().create_access_token({"user_id": user.id})
         response.set_cookie(key="access_token", value=access_token)
         return {"access_token": access_token}
+
+
+@router.post("/logout")
+def logout(response: Response):
+    response.delete_cookie("access_token")
+    return {"message": "Logged out"}
 
 
 @router.get("/me")
