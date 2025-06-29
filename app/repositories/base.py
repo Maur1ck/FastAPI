@@ -1,5 +1,3 @@
-from sqlalchemy.exc import IntegrityError
-
 from sqlalchemy import select, insert, delete, update
 from pydantic import BaseModel
 
