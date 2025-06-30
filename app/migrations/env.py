@@ -15,6 +15,7 @@ from app.database import Base
 from app.models.hotels import HotelsORM
 from app.models.rooms import RoomsORM
 from app.models.users import UsersORM
+from app.models.bookings import BookingsORM
 
 
 # this is the Alembic Config object, which provides
