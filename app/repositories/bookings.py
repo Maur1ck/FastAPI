@@ -1,8 +1,8 @@
-from app.models.bookings import BookingsORM
+from app.models.bookings import BookingsOrm
 from app.repositories.base import BaseRepository
 from app.schemas.bookings import Booking
 
 
 class BookingsRepository(BaseRepository):
-    model = BookingsORM
+    model = BookingsOrm
     schema = Booking

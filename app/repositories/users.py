@@ -1,13 +1,13 @@
 from pydantic import EmailStr
 from sqlalchemy import select
 
-from app.models.users import UsersORM
+from app.models.users import UsersOrm
 from app.repositories.base import BaseRepository
 from app.schemas.users import User, UserWithHashedPassword
 
 
 class UsersRepository(BaseRepository):
-    model = UsersORM
+    model = UsersOrm
     schema = User
 
     async def get_user_with_hashed_password(self, email: EmailStr):
