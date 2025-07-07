@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Body
 
-from app.schemas.facitilies import FacilityAdd
+from app.schemas.facilities import FacilityAdd
 from app.api.dependencies import DBDep
 
 router = APIRouter(prefix="/facilities", tags=["Удобства"])
