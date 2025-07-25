@@ -6,12 +6,13 @@ from fastapi_cache.decorator import cache
 
 from app.schemas.hotels import HotelAdd, HotelPATCH
 from app.api.dependencies import PaginationDep, DBDep
+from app.utils.decorators import cache_decorator
 
 router = APIRouter(prefix="/hotels", tags=["Отели"])
 
 
 @router.get("")
-@cache(expire=10)
+@cache_decorator(expire=15)
 async def get_hotels(
         pagination: PaginationDep,
         db: DBDep,
@@ -21,6 +22,7 @@ async def get_hotels(
         date_to: date = Query(example="2025-08-10"),
 ):
     per_page = pagination.per_page or 5
+    print("ИДУ В БД")
     return await db.hotels.get_filtered_by_time(
         date_from=date_from,
         date_to=date_to,
