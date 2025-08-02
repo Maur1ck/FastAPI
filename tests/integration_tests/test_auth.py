@@ -1,5 +1,3 @@
-import jwt
-
 from app.services.auth import AuthService
 
 
