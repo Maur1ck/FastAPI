@@ -1,6 +1,9 @@
 import json
 import pytest
 from httpx import AsyncClient
+from unittest import mock
+
+mock.patch("fastapi_cache.decorator.cache", lambda *args, **kwargs: lambda f: f).start()
 
 from app.api.dependencies import get_db
 from app.config import settings
