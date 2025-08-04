@@ -3,7 +3,7 @@ from time import sleep
 from PIL import Image
 import os
 
-from app.database import async_session_maker_null_poll
+from app.database import async_session_maker_null_pool
 from app.tasks.celery_app import celery_instance
 from app.utils.db_manager import DBManager
 
@@ -44,7 +44,7 @@ def resize_image(image_path: str):
 
 
 async def get_bookings_with_today_chekin_helper():
-    async with DBManager(session_factory=async_session_maker_null_poll) as db:
+    async with DBManager(session_factory=async_session_maker_null_pool) as db:
         print("Я ЗАПУСКАЮСЬ")
         bookings = await db.bookings.get_bookings_with_today_chekin()
         print(f"{bookings=}")
