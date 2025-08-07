@@ -26,7 +26,6 @@ class BookingsRepository(BaseRepository):
     async def add_booking(self, user_id: int, booking_data: BookingAddRequest):
         rooms_ids = rooms_ids_for_booking(date_from=booking_data.date_from, date_to=booking_data.date_to)
         rooms_ids_free = (await self.session.execute(rooms_ids)).scalars().all()
-        print(rooms_ids_free)
         if booking_data.room_id not in rooms_ids_free:
             raise HTTPException(status_code=404, detail="Все номера заняты")
         query = select(RoomsOrm).filter_by(id=booking_data.room_id)
