@@ -21,7 +21,7 @@ async def register_user(
 
 
 @router.post("/login")
-async def register_user(
+async def login_user(
         data: UserRequestAdd,
         response: Response,
         db: DBDep,
