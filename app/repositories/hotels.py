@@ -18,7 +18,7 @@ class HotelsRepository(BaseRepository):
             .select_from(RoomsOrm)
             .filter(RoomsOrm.id.in_(rooms_ids_to_get))
         )
-        query = select(self.model).filter(self.model.id.in_(hotels_ids_to_get))
+        query = select(self.model).filter(self.model.id.in_(hotels_ids_to_get)) # type: ignore
         if title:
             query = query.filter(func.lower(HotelsOrm.title).contains(title.strip().lower()))
         if location:

@@ -1,14 +1,22 @@
+from typing import Sequence, Any, TypeVar, Generic
+
 from sqlalchemy import select, insert, delete, update
 from pydantic import BaseModel
+from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.database import Base
 from app.repositories.mappers.base import DataMapper
 
 
-class BaseRepository:
-    model = None
-    mapper: DataMapper = None
+SchemaType = TypeVar("SchemaType", bound=BaseModel)
 
-    def __init__(self, session):
+
+class BaseRepository(Generic[SchemaType]):
+    model: type[Base]
+    mapper: type[DataMapper[SchemaType]]
+    session: AsyncSession
+
+    def __init__(self, session: AsyncSession):
         self.session = session
 
     async def get_filtered(self, *filter, **filters):
@@ -27,13 +35,13 @@ class BaseRepository:
             return None
         return self.mapper.map_to_domain_entity(model)
 
-    async def add(self, data: BaseModel):
+    async def add(self, data: BaseModel) -> SchemaType:
         add_data_stmt = insert(self.model).values(**data.model_dump()).returning(self.model)
         result = await self.session.execute(add_data_stmt)
         model = result.scalar_one()
         return self.mapper.map_to_domain_entity(model)
 
-    async def add_bulk(self, data: list[BaseModel]):
+    async def add_bulk(self, data: Sequence[BaseModel]):
         add_data_stmt = insert(self.model).values([item.model_dump() for item in data])
         await self.session.execute(add_data_stmt)
 
