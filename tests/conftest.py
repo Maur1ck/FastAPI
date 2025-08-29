@@ -1,3 +1,4 @@
+# ruff: noqa: E402
 import json
 import pytest
 from httpx import AsyncClient
@@ -9,7 +10,7 @@ from app.api.dependencies import get_db
 from app.config import settings
 from app.database import engine_null_pool, Base, async_session_maker_null_pool
 from app.main import app
-from app.models import *
+from app.models import * # noqa
 from app.schemas.hotels import HotelAdd
 from app.schemas.rooms import RoomAdd
 from app.utils.db_manager import DBManager
