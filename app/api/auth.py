@@ -9,8 +9,8 @@ router = APIRouter(prefix="/auth", tags=["Аутентификация и авт
 
 @router.post("/register")
 async def register_user(
-        data: UserRequestAdd,
-        db: DBDep,
+    data: UserRequestAdd,
+    db: DBDep,
 ):
     try:
         hashed_password = AuthService().hash_password(data.password)
@@ -19,15 +19,15 @@ async def register_user(
         await db.commit()
 
         return {"status": "OK"}
-    except: # noqa: E722
+    except:  # noqa: E722
         raise HTTPException(status_code=400)
 
 
 @router.post("/login")
 async def login_user(
-        data: UserRequestAdd,
-        response: Response,
-        db: DBDep,
+    data: UserRequestAdd,
+    response: Response,
+    db: DBDep,
 ):
     user = await db.users.get_user_with_hashed_password(email=data.email)
     await db.commit()
@@ -48,8 +48,8 @@ def logout(response: Response):
 
 @router.get("/me")
 async def get_me(
-        user_id: UserIdDep,
-        db: DBDep,
+    user_id: UserIdDep,
+    db: DBDep,
 ):
     user = await db.users.get_one_or_none(id=user_id)
     return user

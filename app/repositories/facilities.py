@@ -23,14 +23,12 @@ class RoomsFacilitiesRepository(BaseRepository):
 
         if ids_to_delete:
             delete_m2m_facilities_stmt = delete(self.model).filter(
-                self.model.room_id == room_id,
-                self.model.facility_id.in_(ids_to_delete)
+                self.model.room_id == room_id, self.model.facility_id.in_(ids_to_delete)
             )
             await self.session.execute(delete_m2m_facilities_stmt)
 
         if ids_to_add:
-            insert_m2m_facilities_stmt = (
-                insert(self.model)
-                .values([{"room_id": room_id, "facility_id": f_id} for f_id in ids_to_add])
+            insert_m2m_facilities_stmt = insert(self.model).values(
+                [{"room_id": room_id, "facility_id": f_id} for f_id in ids_to_add]
             )
             await self.session.execute(insert_m2m_facilities_stmt)

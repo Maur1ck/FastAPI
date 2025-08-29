@@ -16,27 +16,30 @@ class BookingsRepository(BaseRepository):
     mapper = BookingDataMapper
 
     async def get_bookings_with_today_chekin(self):
-        query = (
-            select(self.model)
-            .filter(self.model.date_from == date.today())
-        )
+        query = select(self.model).filter(self.model.date_from == date.today())
         res = await self.session.execute(query)
         return [self.mapper.map_to_domain_entity(booking) for booking in res.scalars().all()]
 
     async def add_booking(self, user_id: int, booking_data: BookingAddRequest):
-        rooms_ids = rooms_ids_for_booking(date_from=booking_data.date_from, date_to=booking_data.date_to)
+        rooms_ids = rooms_ids_for_booking(
+            date_from=booking_data.date_from, date_to=booking_data.date_to
+        )
         rooms_ids_free = (await self.session.execute(rooms_ids)).scalars().all()
         if booking_data.room_id not in rooms_ids_free:
             raise HTTPException(status_code=404, detail="Все номера заняты")
         query = select(RoomsOrm).filter_by(id=booking_data.room_id)
         room = (await self.session.execute(query)).scalar_one()
-        add_data_stmt = insert(self.model).values(
-            user_id=user_id,
-            room_id=booking_data.room_id,
-            date_from=booking_data.date_from,
-            date_to=booking_data.date_to,
-            price=room.price
-        ).returning(self.model)
+        add_data_stmt = (
+            insert(self.model)
+            .values(
+                user_id=user_id,
+                room_id=booking_data.room_id,
+                date_from=booking_data.date_from,
+                date_to=booking_data.date_to,
+                price=room.price,
+            )
+            .returning(self.model)
+        )
 
         result = await self.session.execute(add_data_stmt)
         model = result.scalar_one()

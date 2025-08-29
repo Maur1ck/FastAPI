@@ -5,7 +5,9 @@ from app.init import redis_manager
 
 
 def generate_key(func, **kwargs) -> str:
-    args_str = ":".join(f"{k}={v}" for k, v in sorted(kwargs.items()) if isinstance(v, (str, int, float, bool)))
+    args_str = ":".join(
+        f"{k}={v}" for k, v in sorted(kwargs.items()) if isinstance(v, (str, int, float, bool))
+    )
     return f"{func.__name__}:{args_str}"
 
 
@@ -21,5 +23,7 @@ def cache_decorator(expire: int = 60):
             schemas = [f.model_dump() for f in result]
             await redis_manager.set(cache_key, json.dumps(schemas), expire)
             return result
+
         return inner
+
     return wrapper

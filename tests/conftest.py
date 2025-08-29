@@ -10,7 +10,7 @@ from app.api.dependencies import get_db
 from app.config import settings
 from app.database import engine_null_pool, Base, async_session_maker_null_pool
 from app.main import app
-from app.models import * # noqa
+from app.models import *  # noqa
 from app.schemas.hotels import HotelAdd
 from app.schemas.rooms import RoomAdd
 from app.utils.db_manager import DBManager
@@ -64,7 +64,7 @@ async def register_user(ac, setup_database):
         json={
             "email": "kot@pes.com",
             "password": "123",
-        }
+        },
     )
 
 

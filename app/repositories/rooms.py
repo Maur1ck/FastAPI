@@ -20,13 +20,13 @@ class RoomsRepository(BaseRepository):
             .filter(RoomsOrm.id.in_(rooms_ids_to_get))
         )
         result = await self.session.execute(query)
-        return [RoomDataWithRelsMapper.map_to_domain_entity(model) for model in result.unique().scalars().all()]
+        return [
+            RoomDataWithRelsMapper.map_to_domain_entity(model)
+            for model in result.unique().scalars().all()
+        ]
 
     async def get_one_or_none(self, **filters):
-        query = (
-            select(self.model)
-            .options(selectinload(self.model.facilities))
-            .filter_by(**filters))
+        query = select(self.model).options(selectinload(self.model.facilities)).filter_by(**filters)
         result = await self.session.execute(query)
         model = result.scalars().one_or_none()
         if model is None:

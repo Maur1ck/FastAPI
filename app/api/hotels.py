@@ -13,12 +13,12 @@ router = APIRouter(prefix="/hotels", tags=["Отели"])
 @router.get("")
 @cache(expire=15)
 async def get_hotels(
-        pagination: PaginationDep,
-        db: DBDep,
-        title: str | None = Query(None, description="Название отеля"),
-        location: str | None = Query(None, description="Место"),
-        date_from: date = Query(example="2025-08-01"),
-        date_to: date = Query(example="2025-08-10"),
+    pagination: PaginationDep,
+    db: DBDep,
+    title: str | None = Query(None, description="Название отеля"),
+    location: str | None = Query(None, description="Место"),
+    date_from: date = Query(example="2025-08-01"),
+    date_to: date = Query(example="2025-08-10"),
 ):
     per_page = pagination.per_page or 5
     return await db.hotels.get_filtered_by_time(
@@ -38,17 +38,20 @@ async def get_hotel(hotel_id: int, db: DBDep):
 
 @router.post("")
 async def create_hotel(
-        db: DBDep,
-        hotel_data: HotelAdd = Body(openapi_examples={
-    "1": Example(
-        summary="Сочи",
-        value={"title": "Отель Сочи 5 звезд у моря", "location": "ул. Моря, 1"}
+    db: DBDep,
+    hotel_data: HotelAdd = Body(
+        openapi_examples={
+            "1": Example(
+                summary="Сочи",
+                value={"title": "Отель Сочи 5 звезд у моря", "location": "ул. Моря, 1"},
+            ),
+            "2": Example(
+                summary="Дубай",
+                value={"title": "Отель Дубай У фонтана", "location": "уд. Шейха, 2"},
+            ),
+        }
     ),
-    "2": Example(
-        summary="Дубай",
-        value={"title": "Отель Дубай У фонтана", "location": "уд. Шейха, 2"}
-    ),
-})):
+):
     hotel = await db.hotels.add(hotel_data)
     await db.commit()
 
