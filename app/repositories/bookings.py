@@ -1,14 +1,14 @@
 from datetime import date
+from typing import Sequence
 
 from fastapi import HTTPException
-from sqlalchemy import select, insert
+from sqlalchemy import select
 
-from app.models import RoomsOrm
 from app.models.bookings import BookingsOrm
 from app.repositories.base import BaseRepository
 from app.repositories.mappers.mappers import BookingDataMapper
 from app.repositories.utils import rooms_ids_for_booking
-from app.schemas.bookings import BookingAddRequest
+from app.schemas.bookings import BookingAdd
 
 
 class BookingsRepository(BaseRepository):
@@ -20,27 +20,17 @@ class BookingsRepository(BaseRepository):
         res = await self.session.execute(query)
         return [self.mapper.map_to_domain_entity(booking) for booking in res.scalars().all()]
 
-    async def add_booking(self, user_id: int, booking_data: BookingAddRequest):
-        rooms_ids = rooms_ids_for_booking(
-            date_from=booking_data.date_from, date_to=booking_data.date_to
+    async def add_booking(self, data: BookingAdd, hotel_id: int):
+        rooms_ids_to_get = rooms_ids_for_booking(
+            date_from=data.date_from,
+            date_to=data.date_to,
+            hotel_id=hotel_id,
         )
-        rooms_ids_free = (await self.session.execute(rooms_ids)).scalars().all()
-        if booking_data.room_id not in rooms_ids_free:
-            raise HTTPException(status_code=404, detail="Все номера заняты")
-        query = select(RoomsOrm).filter_by(id=booking_data.room_id)
-        room = (await self.session.execute(query)).scalar_one()
-        add_data_stmt = (
-            insert(self.model)
-            .values(
-                user_id=user_id,
-                room_id=booking_data.room_id,
-                date_from=booking_data.date_from,
-                date_to=booking_data.date_to,
-                price=room.price,
-            )
-            .returning(self.model)
-        )
+        rooms_ids_to_book_res = await self.session.execute(rooms_ids_to_get)
+        rooms_ids_to_book: Sequence[int] = rooms_ids_to_book_res.scalars().all()
 
-        result = await self.session.execute(add_data_stmt)
-        model = result.scalar_one()
-        return self.mapper.map_to_domain_entity(model)
+        if data.room_id in rooms_ids_to_book:
+            new_booking = await self.add(data)
+            return new_booking
+        else:
+            raise HTTPException(500)
