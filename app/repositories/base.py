@@ -1,12 +1,13 @@
 from typing import Sequence, Any, TypeVar, Generic
 
+from asyncpg import UniqueViolationError
 from sqlalchemy import select, insert, delete, update
 from pydantic import BaseModel
-from sqlalchemy.exc import NoResultFound
+from sqlalchemy.exc import NoResultFound, IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.database import Base
-from app.exceptions import ObjectNotFoundException
+from app.exceptions import ObjectNotFoundException, ObjectAlreadyExistsException
 from app.repositories.mappers.base import DataMapper
 
 
@@ -47,10 +48,17 @@ class BaseRepository(Generic[SchemaType]):
         return self.mapper.map_to_domain_entity(model)
 
     async def add(self, data: BaseModel) -> SchemaType:
-        add_data_stmt = insert(self.model).values(**data.model_dump()).returning(self.model)
-        result = await self.session.execute(add_data_stmt)
-        model = result.scalar_one()
-        return self.mapper.map_to_domain_entity(model)
+        try:
+            add_data_stmt = insert(self.model).values(**data.model_dump()).returning(self.model)
+            result = await self.session.execute(add_data_stmt)
+            model = result.scalar_one()
+            return self.mapper.map_to_domain_entity(model)
+        except IntegrityError as ex:
+            if isinstance(ex.orig.__cause__, UniqueViolationError):
+                raise ObjectAlreadyExistsException from ex
+            else:
+                raise ex
+
 
     async def add_bulk(self, data: Sequence[BaseModel]):
         add_data_stmt = insert(self.model).values([item.model_dump() for item in data])
