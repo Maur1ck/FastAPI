@@ -1,4 +1,5 @@
-from typing import Sequence, Any, TypeVar, Generic
+import logging
+from typing import Sequence, TypeVar, Generic
 
 from asyncpg import UniqueViolationError
 from sqlalchemy import select, insert, delete, update
@@ -54,9 +55,11 @@ class BaseRepository(Generic[SchemaType]):
             model = result.scalar_one()
             return self.mapper.map_to_domain_entity(model)
         except IntegrityError as ex:
+            logging.error(f"Не удалось добавить данные в БД, входные данные={data} тип ошибки:{type(ex.orig.__cause__)=}")
             if isinstance(ex.orig.__cause__, UniqueViolationError):
                 raise ObjectAlreadyExistsException from ex
             else:
+                logging.error(f"Не знакомая ошибка: не удалось добавить данные в БД, входные данные={data} тип ошибки:{type(ex.orig.__cause__)=}")
                 raise ex
 
 
