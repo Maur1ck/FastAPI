@@ -20,7 +20,7 @@ async def register_user(
 
         return {"status": "OK"}
     except:  # noqa: E722
-        raise HTTPException(status_code=400)
+        raise HTTPException(status_code=409, detail="Пользователь уже существует")
 
 
 @router.post("/login")

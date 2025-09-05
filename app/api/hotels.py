@@ -1,6 +1,6 @@
 from datetime import date
 
-from fastapi import Query, APIRouter, Body
+from fastapi import Query, APIRouter, Body, HTTPException
 from fastapi.openapi.models import Example
 from fastapi_cache.decorator import cache
 
@@ -21,6 +21,8 @@ async def get_hotels(
     date_to: date = Query(example="2025-08-10"),
 ):
     per_page = pagination.per_page or 5
+    if date_to <= date_from:
+        raise HTTPException(status_code=422, detail="Дата заезда не может быть позже даты выезда")
     return await db.hotels.get_filtered_by_time(
         date_from=date_from,
         date_to=date_to,
@@ -33,7 +35,10 @@ async def get_hotels(
 
 @router.get("/{hotel_id}")
 async def get_hotel(hotel_id: int, db: DBDep):
-    return await db.hotels.get_one_or_none(id=hotel_id)
+    hotel =  await db.hotels.get_one_or_none(id=hotel_id)
+    if not hotel:
+        raise HTTPException(status_code=404, detail="Отель не найден")
+    return hotel
 
 
 @router.post("")
