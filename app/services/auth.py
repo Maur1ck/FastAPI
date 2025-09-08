@@ -4,9 +4,10 @@ import jwt
 from passlib.context import CryptContext
 
 from app.config import settings
+from app.services.base import BaseService
 
 
-class AuthService:
+class AuthService(BaseService):
     pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
     def verify_password(self, plain_password, hashed_password):
