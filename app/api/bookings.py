@@ -1,10 +1,10 @@
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter
 
 from app.api.dependencies import DBDep, UserIdDep
-from app.exceptions import ObjectNotFoundException, AllRoomsAreBookedException
-from app.schemas.bookings import BookingAddRequest, BookingAdd
-from app.schemas.hotels import Hotel
-from app.schemas.rooms import Room
+from app.exceptions import AllRoomsAreBookedException, AllRoomsAreBookedHTTPException, RoomNotFoundException, \
+    RoomNotFoundHTTPException
+from app.schemas.bookings import BookingAddRequest
+from app.services.bookings import BookingService
 
 router = APIRouter(prefix="/bookings", tags=["Бронирование"])
 
@@ -16,31 +16,19 @@ async def add_booking(
     booking_data: BookingAddRequest,
 ):
     try:
-        room: Room = await db.rooms.get_one(id=booking_data.room_id)
-    except ObjectNotFoundException:
-        raise HTTPException(status_code=400, detail="Номер не найден")
-    hotel: Hotel = await db.hotels.get_one(id=room.hotel_id)
-    room_price: int = room.price
-    _booking_data = BookingAdd(
-        user_id=user_id,
-        price=room_price,
-        **booking_data.model_dump(),
-    )
-    try:
-        booking = await db.bookings.add_booking(_booking_data, hotel_id=hotel.id)
-    except AllRoomsAreBookedException as ex:
-        raise HTTPException(status_code=409, detail=ex.detail)
-    await db.commit()
+        booking = await BookingService(db).add_booking(user_id, booking_data)
+    except AllRoomsAreBookedException:
+        raise AllRoomsAreBookedHTTPException
+    except RoomNotFoundException:
+        raise RoomNotFoundHTTPException
     return {"status": "OK", "data": booking}
 
 
 @router.get("")
 async def get_bookings(db: DBDep):
-    bookings = await db.bookings.get_all()
-    return {"status": "OK", "data": bookings}
+    return await BookingService(db).get_bookings()
 
 
 @router.get("/me")
 async def get_me(user_id: UserIdDep, db: DBDep):
-    bookings = await db.bookings.get_filtered(user_id=user_id)
-    return {"status": "OK", "data": bookings}
+    return await BookingService(db).get_my_bookings(user_id)
